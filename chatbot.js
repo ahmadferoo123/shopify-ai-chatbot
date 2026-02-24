@@ -156,7 +156,7 @@
       }));
 
       // Backend ko call karo
-      const response = await fetch("YOUR_VERCEL_URL/api/chat", {
+     const response = await fetch("https://shopify-ai-chatbot-one.vercel.app/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMessage, products }),
