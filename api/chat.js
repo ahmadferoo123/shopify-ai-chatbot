@@ -1,29 +1,37 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") return res.status(200).end();
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const { message, products } = req.body;
 
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  const prompt = `You are a helpful shopping assistant for an online store.
+Available products in the store:
+${JSON.stringify(products)}
 
-  const prompt = `
-    Tum ek helpful shopping assistant ho.
-    Store ke yeh products available hain:
-    ${JSON.stringify(products)}
-    
-    Customer ka message: "${message}"
-    
-    Customer ki zaroorat ke mutabiq best 3 products suggest karo.
-    Har product ka naam, price aur link mention karo.
-    Friendly aur simple language mein jawab do.
-  `;
+Customer message: "${message}"
 
-  const result = await model.generateContent(prompt);
-  const response = result.response.text();
+Based on the customer's request, suggest the best matching products from the list above.
+For each product mention: Name, Price, and Link.
+If no matching products found, say so politely.
+Keep response short and helpful. Respond in English only.`;
 
-  res.status(200).json({ reply: response });
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${process.env.GEMINI_API_KEY}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+      }),
+    }
+  );
+
+  const data = await response.json();
+  const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, could not get a response.";
+
+  res.status(200).json({ reply });
 }
