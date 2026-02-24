@@ -6,21 +6,21 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { message, products } = req.body;
+  const { message, collections } = req.body;
 
   const prompt = `You are a helpful shopping assistant for an online store.
-Available products in the store:
-${JSON.stringify(products)}
+Available collections in the store:
+${JSON.stringify(collections)}
 
 Customer message: "${message}"
 
-Based on the customer's request, suggest the best matching products from the list above.
-For each product mention: Name, Price, and Link.
-If no matching products found, say so politely.
-Keep response short and helpful. Respond in English only.`;
+Match the customer's request to the most relevant collection(s) from the list above.
+Show collection name as a clickable link using HTML anchor tag like: <a href="COLLECTION_URL" target="_blank">COLLECTION NAME</a>
+Keep response short. Respond in English only.
+If no matching collection found, say: "Sorry, no matching collection found."`;
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${process.env.GEMINI_API_KEY}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
