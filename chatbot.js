@@ -39,19 +39,18 @@
     messages.scrollTop = messages.scrollHeight;
 
     try {
-      const productsRes = await fetch(window.location.origin + "/products.json?limit=50");
-      const productsData = await productsRes.json();
-      const products = productsData.products.map((p) => ({
-        name: p.title,
-        price: p.variants[0].price,
-        url: window.location.origin + "/products/" + p.handle,
-      }));
+      const productsRes = await fetch(window.location.origin + "/collections.json?limit=50");
+const productsData = await productsRes.json();
+const collections = productsData.collections.map((c) => ({
+  name: c.title,
+  url: window.location.origin + "/collections/" + c.handle,
+}));
 
-      const response = await fetch("https://shopify-ai-chatbot-one.vercel.app/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMessage, products }),
-      });
+const response = await fetch("https://shopify-ai-chatbot-one.vercel.app/api/chat", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ message: userMessage, collections }),
+});
 
       const data = await response.json();
       document.getElementById("loading").remove();
