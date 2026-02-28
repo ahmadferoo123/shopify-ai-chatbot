@@ -33,7 +33,7 @@ Instructions:
         "HTTP-Referer": "https://shopify-ai-chatbot-one.vercel.app"
       },
       body: JSON.stringify({
-        model: "mistralai/mistral-7b-instruct:free",
+        model: "meta-llama/llama-3.2-3b-instruct:free",
         messages: [{ role: "user", content: prompt }],
         max_tokens: 500
       }),
