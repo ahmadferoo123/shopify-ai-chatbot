@@ -20,25 +20,26 @@ Show collection name as a clickable link using HTML like: <a href="COLLECTION_UR
 Keep response short. Respond in English only.
 If no matching collection found, say: "Sorry, no matching collection found."`;
 
-    const geminiRes = await fetch(
-     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-        }),
-      }
-    );
+    const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "llama3-8b-8192",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 500
+      }),
+    });
 
-    const data = await geminiRes.json();
-    
-    // Agar error aaye toh dikhao
+    const data = await groqRes.json();
+
     if (data.error) {
-      return res.status(200).json({ reply: `API Error: ${data.error.message}` });
+      return res.status(200).json({ reply: `Error: ${data.error.message}` });
     }
 
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, could not get a response.";
+    const reply = data.choices?.[0]?.message?.content || "Sorry, could not get a response.";
     res.status(200).json({ reply });
 
   } catch (err) {
