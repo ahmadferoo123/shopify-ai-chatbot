@@ -7,25 +7,45 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
-    const { message, collections } = req.body;
-    const msg = message.toLowerCase();
+    const { message, products } = req.body;
 
-    const matched = collections.filter((c) => {
-      const name = c.name.toLowerCase();
-      const words = msg.split(" ");
-      return words.some((word) => name.includes(word) && word.length > 2);
+    const prompt = `You are a friendly AI shopping assistant for an online store.
+
+Store products available:
+${JSON.stringify(products)}
+
+Customer message: "${message}"
+
+Instructions:
+- If customer asks about products, prices, or categories - suggest matching products with clickable HTML links like: <a href="PRODUCT_URL" target="_blank">PRODUCT NAME</a> - $PRICE
+- If customer greets you - greet back friendly
+- If customer asks general questions - answer helpfully
+- Always be friendly and helpful
+- Keep responses short and clear
+- Respond in English only
+- Show maximum 5 products at a time`;
+
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "HTTP-Referer": "https://shopify-ai-chatbot-one.vercel.app"
+      },
+      body: JSON.stringify({
+        model: "mistralai/mistral-7b-instruct:free",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 500
+      }),
     });
 
-    const toShow = matched.length > 0 ? matched : collections;
-    
-    let reply = matched.length > 0 
-      ? "Here are matching collections:<br><br>"
-      : "Here are all our collections:<br><br>";
+    const data = await response.json();
 
-    toShow.forEach((c) => {
-      reply += `👉 <a href="${c.url}" target="_blank" style="color:#000;font-weight:bold;">${c.name}</a><br>`;
-    });
+    if (data.error) {
+      return res.status(200).json({ reply: `Error: ${data.error.message}` });
+    }
 
+    const reply = data.choices?.[0]?.message?.content || "Sorry, could not get a response.";
     res.status(200).json({ reply });
 
   } catch (err) {
