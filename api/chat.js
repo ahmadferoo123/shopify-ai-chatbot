@@ -24,7 +24,7 @@ If no matching collection found, say: "Sorry, no matching collection found."`;
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+       "Authorization": `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`
       },
       body: JSON.stringify({
         model: "llama3-8b-8192",
