@@ -16,16 +16,15 @@ export default async function handler(req, res) {
       return words.some((word) => name.includes(word) && word.length > 2);
     });
 
-    let reply = "";
+    const toShow = matched.length > 0 ? matched : collections;
+    
+    let reply = matched.length > 0 
+      ? "Here are matching collections:<br><br>"
+      : "Here are all our collections:<br><br>";
 
-    if (matched.length > 0) {
-      reply = "Here are the matching collections for you:<br><br>";
-      matched.forEach((c) => {
-        reply += `👉 <a href="${c.url}" target="_blank" style="color:#000;font-weight:bold;">${c.name}</a><br>`;
-      });
-    } else {
-      reply = "Sorry, no matching collection found. Please try different keywords!";
-    }
+    toShow.forEach((c) => {
+      reply += `👉 <a href="${c.url}" target="_blank" style="color:#000;font-weight:bold;">${c.name}</a><br>`;
+    });
 
     res.status(200).json({ reply });
 
